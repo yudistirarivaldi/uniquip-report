@@ -1,20 +1,41 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "../../../styles/dashboard.css";
 import "../../../styles/master.css";
 
 export default function UnitMaster() {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   const initialUnit = [
     { id: "EXCA-201", model: "Komatsu PC-200", type: "Excavator", status: "Ready", sn: "K200-88120X", year: "2021" },
     { id: "TRK-052", model: "Scania P360", type: "Dump Truck", status: "Breakdown", sn: "S360-11223Y", year: "2022" },
     { id: "DOZ-105", model: "CAT D10T", type: "Bulldozer", status: "Ready", sn: "C10T-55442Z", year: "2019" },
     { id: "LV-012", model: "Toyota Hilux", type: "Light Vehicle", status: "Maintenance", sn: "TH-099281W", year: "2023" },
+    { id: "EXCA-202", model: "Komatsu PC-200", type: "Excavator", status: "Ready", sn: "K200-88121X", year: "2021" },
+    { id: "TRK-053", model: "Scania P360", type: "Dump Truck", status: "Ready", sn: "S360-11224Y", year: "2022" },
+    { id: "DOZ-106", model: "CAT D10T", type: "Bulldozer", status: "Breakdown", sn: "C10T-55443Z", year: "2019" },
   ];
 
   const [units, setUnits] = useState(initialUnit);
+
+  // Search & Pagination Logic
+  const filteredUnits = useMemo(() => {
+    return units.filter(u => 
+      u.id.toLowerCase().includes(search.toLowerCase()) || 
+      u.model.toLowerCase().includes(search.toLowerCase()) ||
+      u.sn.toLowerCase().includes(search.toLowerCase()) ||
+      u.type.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [units, search]);
+
+  const totalPages = Math.ceil(filteredUnits.length / itemsPerPage);
+  const paginatedUnits = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredUnits.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredUnits, currentPage]);
 
   const openAddModal = async () => {
     const bootstrap = await import("bootstrap");
@@ -70,7 +91,10 @@ export default function UnitMaster() {
                 className="form-control" 
                 placeholder="Cari ID Unit, Model, atau Serial Number..." 
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
@@ -96,7 +120,7 @@ export default function UnitMaster() {
                 </tr>
               </thead>
               <tbody>
-                {units.filter(u => u.id.toLowerCase().includes(search.toLowerCase()) || u.model.toLowerCase().includes(search.toLowerCase())).map((u) => (
+                {paginatedUnits.length > 0 ? paginatedUnits.map((u) => (
                   <tr key={u.id}>
                     <td className="fw-bold text-primary">{u.id}</td>
                     <td>
@@ -126,10 +150,55 @@ export default function UnitMaster() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-5 text-muted">
+                      Tidak ada data unit yang ditemukan.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Functional Pagination */}
+          {totalPages > 0 && (
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
+              <p className="text-muted small mb-0">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredUnits.length)} dari {filteredUnits.length} unit
+              </p>
+              <nav aria-label="Page navigation">
+                <ul className="pagination pagination-sm mb-0">
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <li key={i+1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                      <button 
+                        className="page-link border-0 rounded-circle mx-1" 
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 

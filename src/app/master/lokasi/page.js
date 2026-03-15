@@ -1,20 +1,40 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "../../../styles/dashboard.css";
 import "../../../styles/master.css";
 
 export default function LokasiMaster() {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   const initialLokasi = [
     { id: "LOC-01", name: "Pit Alpha", type: "Pit Mining", status: "Active", desc: "Area penambangan utama blok utara" },
     { id: "LOC-02", name: "Pit Bravo", type: "Pit Mining", status: "Active", desc: "Area penambangan blok selatan" },
     { id: "LOC-03", name: "Workshop Utama", type: "Workshop", status: "Active", desc: "Pusat perbaikan dan maintenance berat" },
     { id: "LOC-04", name: "Site Banjarbaru", type: "Office & Camp", status: "Active", desc: "Kantor pusat operasional dan mess karyawan" },
+    { id: "LOC-05", name: "Pit Charlie", type: "Pit Mining", status: "Active", desc: "Area perluasan penambangan baru" },
+    { id: "LOC-06", name: "Hauling Road KM 12", type: "Hauling", status: "Active", desc: "Jalan angkut batubara utama" },
+    { id: "LOC-07", name: "Port North", type: "Office", status: "Active", desc: "Area pelabuhan utara" },
   ];
 
   const [locations, setLocations] = useState(initialLokasi);
+
+  // Search & Pagination Logic
+  const filteredLocations = useMemo(() => {
+    return locations.filter(l => 
+      l.name.toLowerCase().includes(search.toLowerCase()) || 
+      l.id.toLowerCase().includes(search.toLowerCase()) ||
+      l.type.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [locations, search]);
+
+  const totalPages = Math.ceil(filteredLocations.length / itemsPerPage);
+  const paginatedLocations = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredLocations.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredLocations, currentPage]);
 
   const openAddModal = async () => {
     const bootstrap = await import("bootstrap");
@@ -51,7 +71,10 @@ export default function LokasiMaster() {
                 className="form-control" 
                 placeholder="Cari ID atau Nama Lokasi..." 
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
@@ -77,7 +100,7 @@ export default function LokasiMaster() {
                 </tr>
               </thead>
               <tbody>
-                {locations.filter(l => l.name.toLowerCase().includes(search.toLowerCase())).map((loc) => (
+                {paginatedLocations.length > 0 ? paginatedLocations.map((loc) => (
                   <tr key={loc.id}>
                     <td className="fw-bold text-primary">{loc.id}</td>
                     <td>
@@ -105,10 +128,55 @@ export default function LokasiMaster() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-5 text-muted">
+                      Tidak ada data lokasi yang ditemukan.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Functional Pagination */}
+          {totalPages > 0 && (
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
+              <p className="text-muted small mb-0">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredLocations.length)} dari {filteredLocations.length} lokasi
+              </p>
+              <nav aria-label="Page navigation">
+                <ul className="pagination pagination-sm mb-0">
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <li key={i+1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                      <button 
+                        className="page-link border-0 rounded-circle mx-1" 
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 

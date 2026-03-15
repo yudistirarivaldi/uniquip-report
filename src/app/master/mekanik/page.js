@@ -1,20 +1,41 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "../../../styles/dashboard.css";
 import "../../../styles/master.css";
 
 export default function MekanikMaster() {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   const initialMekanik = [
     { id: "MKN-001", name: "Budi Santoso", role: "Senior Mechanic", location: "Pit Alpha", status: "Active", email: "budi@uniquip.com" },
     { id: "MKN-002", name: "Andi Wijaya", role: "Hydraulic Specialist", location: "Workshop Utama", status: "Active", email: "andi@uniquip.com" },
     { id: "MKN-003", name: "Siti Aminah", role: "Engine Specialist", location: "Pit Bravo", status: "Active", email: "siti@uniquip.com" },
     { id: "MKN-004", name: "Rahmat Hidayat", role: "General Mechanic", location: "Site Banjarbaru", status: "Active", email: "rahmat@uniquip.com" },
+    { id: "MKN-005", name: "Dedi Kurniawan", role: "Senior Mechanic", location: "Pit Alpha", status: "Active", email: "dedi@uniquip.com" },
+    { id: "MKN-006", name: "Agus Prasetyo", role: "Utility Mechanic", location: "Workshop Utama", status: "Active", email: "agus@uniquip.com" },
+    { id: "MKN-007", name: "Eko Prabowo", role: "Welder Specialist", location: "Site Banjarbaru", status: "Active", email: "eko@uniquip.com" },
+    { id: "MKN-008", name: "Iwan Setiawan", role: "Electric Specialist", location: "Pit Bravo", status: "Active", email: "iwan@uniquip.com" },
   ];
 
   const [mekaniks, setMekaniks] = useState(initialMekanik);
+
+  // Search & Pagination Logic
+  const filteredMekaniks = useMemo(() => {
+    return mekaniks.filter(m => 
+      m.name.toLowerCase().includes(search.toLowerCase()) || 
+      m.id.toLowerCase().includes(search.toLowerCase()) ||
+      m.location.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [mekaniks, search]);
+
+  const totalPages = Math.ceil(filteredMekaniks.length / itemsPerPage);
+  const paginatedMekaniks = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredMekaniks.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredMekaniks, currentPage]);
 
   const openAddModal = async () => {
     const bootstrap = await import("bootstrap");
@@ -51,7 +72,10 @@ export default function MekanikMaster() {
                 className="form-control" 
                 placeholder="Cari ID, Nama, atau Lokasi Mekanik..." 
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1); // Reset to page 1 on search
+                }}
               />
             </div>
           </div>
@@ -77,7 +101,7 @@ export default function MekanikMaster() {
                 </tr>
               </thead>
               <tbody>
-                {mekaniks.map((m, idx) => (
+                {paginatedMekaniks.length > 0 ? paginatedMekaniks.map((m) => (
                   <tr key={m.id}>
                     <td className="fw-bold text-primary">{m.id}</td>
                     <td>
@@ -110,24 +134,55 @@ export default function MekanikMaster() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-5 text-muted">
+                      Tidak ada data mekanik yang ditemukan.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
           
-          {/* Pagination Placeholder */}
-          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
-            <p className="text-muted small mb-0">Menampilkan 1-10 dari 42 mekanik</p>
-            <nav aria-label="Page navigation">
-              <ul className="pagination pagination-sm mb-0">
-                <li className="page-item disabled"><a className="page-link border-0 rounded-circle mx-1" href="#"><i className="bi bi-chevron-left"></i></a></li>
-                <li className="page-item active"><a className="page-link border-0 rounded-circle mx-1" href="#">1</a></li>
-                <li className="page-item"><a className="page-link border-0 rounded-circle mx-1" href="#">2</a></li>
-                <li className="page-item"><a className="page-link border-0 rounded-circle mx-1" href="#">3</a></li>
-                <li className="page-item"><a className="page-link border-0 rounded-circle mx-1" href="#"><i className="bi bi-chevron-right"></i></a></li>
-              </ul>
-            </nav>
-          </div>
+          {/* Functional Pagination */}
+          {totalPages > 0 && (
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
+              <p className="text-muted small mb-0">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredMekaniks.length)} dari {filteredMekaniks.length} mekanik
+              </p>
+              <nav aria-label="Page navigation">
+                <ul className="pagination pagination-sm mb-0">
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <li key={i+1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                      <button 
+                        className="page-link border-0 rounded-circle mx-1" 
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link border-0 rounded-circle mx-1" 
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 
@@ -141,7 +196,6 @@ export default function MekanikMaster() {
             </div>
             <div className="modal-body">
               <form>
-                {/* Personal Information Section */}
                 <div className="section-divider">
                   <span className="section-divider-text">Informasi Personel</span>
                 </div>
@@ -177,7 +231,6 @@ export default function MekanikMaster() {
                   </div>
                 </div>
 
-                {/* Account Section */}
                 <div className="section-divider mt-5">
                   <span className="section-divider-text">Detail Akun Operasional</span>
                 </div>
