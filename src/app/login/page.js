@@ -11,12 +11,13 @@ export default function LoginPage() {
           <div className="col-md-5">
             <div className="card login-card p-4 p-md-5 animate-fade-up">
               <div className="text-center mb-4">
-                <div className="mb-2">
-                  <span className="badge bg-primary-subtle text-primary px-3 py-2">v1.0 Beta</span>
+                <div className="mb-3">
+                  <img 
+                    src="https://www.uniquip.co.id/wp-content/uploads/2023/02/Logo-Uniquip-Hitam.png" 
+                    alt="Uniquip Logo" 
+                    style={{ height: "50px", objectFit: "contain" }}
+                  />
                 </div>
-                <h2 className="fw-800 text-dark">
-                  MECH<span className="text-primary">LOG</span>
-                </h2>
                 <p className="text-muted small">Silahkan masuk untuk memulai laporan</p>
               </div>
               <form>

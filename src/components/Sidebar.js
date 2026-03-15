@@ -29,7 +29,11 @@ export default function Sidebar({ show, onToggle }) {
       <aside className={`sidebar ${show ? 'show' : 'hidden-desktop'}`}>
         <div className="sidebar-header">
           <Link href="/" className="sidebar-logo">
-            MECH<span className="text-secondary">LOG.</span>
+            <img 
+              src="https://www.uniquip.co.id/wp-content/uploads/2023/02/Logo-Uniquip-Hitam.png" 
+              alt="Uniquip Logo" 
+              style={{ height: "40px", objectFit: "contain" }}
+            />
           </Link>
           <button className="sidebar-toggle-btn" onClick={onToggle}>
             <i className="bi bi-chevron-left"></i>

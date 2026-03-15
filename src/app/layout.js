@@ -40,7 +40,11 @@ export default function RootLayout({ children }) {
 
               {/* Header for mobile toggle */}
               <div className="d-lg-none p-3 bg-white border-bottom sticky-top d-flex align-items-center justify-content-between">
-                <span className="fw-800 text-primary">MECHLOG.</span>
+                <img 
+                  src="https://www.uniquip.co.id/wp-content/uploads/2023/02/Logo-Uniquip-Hitam.png" 
+                  alt="Uniquip Logo" 
+                  style={{ height: "30px", objectFit: "contain" }}
+                />
                 <button 
                   className="btn btn-light border"
                   onClick={toggleSidebar}
