@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import "../styles/dashboard.css";
 
 export default function Home() {
   const [selectedActivity, setSelectedActivity] = useState(null);
