@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "../../../lib/supabase";
+import { unitService } from "../../../services/unitService";
+import UnitModal from "./UnitModal";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import "../../../styles/dashboard.css";
@@ -35,25 +36,15 @@ export default function UnitMaster() {
   const fetchUnits = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('units')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) throw error;
-      setUnits(data || []);
+      const data = await unitService.getAll();
+      setUnits(data);
     } catch (err) {
       console.error("Gagal memuat data:", err.message);
       MySwal.fire({
         icon: 'error',
         title: 'Gagal Memuat Data',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -95,16 +86,9 @@ export default function UnitMaster() {
     setSubmitting(true);
     try {
       if (isEditing) {
-        const { error } = await supabase
-          .from('units')
-          .update(formData)
-          .eq('id', editId);
-        if (error) throw error;
+        await unitService.update(editId, formData);
       } else {
-        const { error } = await supabase
-          .from('units')
-          .insert([formData]);
-        if (error) throw error;
+        await unitService.create(formData);
       }
 
       const bootstrap = await import("bootstrap");
@@ -117,17 +101,13 @@ export default function UnitMaster() {
       MySwal.fire({
         icon: 'success',
         title: isEditing ? 'Berhasil Diperbarui!' : 'Berhasil Ditambahkan!',
-        text: `Unit ${formData.model} telah berhasil disimpan ke database.`,
+        text: `Unit ${formData.model} telah berhasil disimpan.`,
         showConfirmButton: false,
         timer: 2500,
         toast: true,
         position: 'top-end',
         timerProgressBar: true,
-        customClass: {
-          popup: 'swal2-toast-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom'
-        }
+        customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
       });
 
     } catch (err) {
@@ -135,12 +115,7 @@ export default function UnitMaster() {
         icon: 'error',
         title: 'Terjadi Kesalahan',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -157,23 +132,14 @@ export default function UnitMaster() {
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal',
       reverseButtons: true,
-      customClass: {
-        popup: 'swal2-popup-custom',
-        title: 'swal2-title-custom',
-        htmlContainer: 'swal2-html-custom',
-        confirmButton: 'swal2-confirm-btn-custom',
-        cancelButton: 'swal2-cancel-btn-custom'
-      },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
       buttonsStyling: false
     });
 
     if (result.isConfirmed) {
       try {
-        const { error } = await supabase.from('units').delete().eq('id', id);
-        if (error) throw error;
-        
+        await unitService.delete(id);
         fetchUnits();
-        
         MySwal.fire({
           icon: 'success',
           title: 'Terhapus!',
@@ -182,23 +148,14 @@ export default function UnitMaster() {
           timer: 1500,
           toast: true,
           position: 'top-end',
-          customClass: {
-            popup: 'swal2-toast-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom'
-          }
+          customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
         });
       } catch (err) {
         MySwal.fire({
           icon: 'error',
           title: 'Gagal Menghapus',
           text: err.message,
-          customClass: {
-            popup: 'swal2-popup-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom',
-            confirmButton: 'swal2-confirm-btn-custom'
-          },
+          customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
           buttonsStyling: false
         });
       }
@@ -316,7 +273,6 @@ export default function UnitMaster() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
               <p className="text-muted small mb-0">Halaman {currentPage} dari {totalPages}</p>
@@ -340,61 +296,14 @@ export default function UnitMaster() {
         </div>
       </div>
 
-      {/* Unified Modal */}
-      <div className="modal fade" id="unitModal" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content border-0 shadow-lg p-2">
-            <div className="modal-header border-bottom-0 pb-0">
-              <h5 className="modal-title fw-bold">{isEditing ? `Edit Unit #${editId}` : "Tambah Unit Baru"}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleSubmit}>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label-custom">KATEGORI UNIT</label>
-                    <select name="type" className="form-select form-control-custom" value={formData.type} onChange={handleInputChange} required>
-                      <option value="">Pilih Kategori</option>
-                      <option value="Excavator">Excavator</option>
-                      <option value="Dump Truck">Dump Truck</option>
-                      <option value="Bulldozer">Bulldozer</option>
-                      <option value="Grader">Grader</option>
-                      <option value="Light Vehicle">Light Vehicle</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">TAHUN PEMBUATAN</label>
-                    <input type="text" name="year" className="form-control form-control-custom" placeholder="202X" value={formData.year} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-md-12">
-                    <label className="form-label-custom">MODEL / BRAND</label>
-                    <input type="text" name="model" className="form-control form-control-custom" placeholder="Contoh: Komatsu PC-200" value={formData.model} onChange={handleInputChange} required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">SERIAL NUMBER</label>
-                    <input type="text" name="sn" className="form-control form-control-custom" placeholder="Nomor Rangka/Mesin" value={formData.sn} onChange={handleInputChange} required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">STATUS OPERASIONAL</label>
-                    <select name="status" className="form-select form-control-custom" value={formData.status} onChange={handleInputChange}>
-                      <option value="Ready">Ready</option>
-                      <option value="Breakdown">Breakdown</option>
-                      <option value="Maintenance">Scheduled Maintenance</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="modal-footer border-top-0 p-3 px-0 pb-0 mt-4">
-                  <button type="button" className="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                  <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" disabled={submitting}>
-                    {submitting ? "Menyimpan..." : (isEditing ? "Update Data" : "Simpan Unit")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <UnitModal 
+        isEditing={isEditing}
+        editId={editId}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+        submitting={submitting}
+      />
     </main>
   );
 }

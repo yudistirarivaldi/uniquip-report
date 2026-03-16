@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "../../../lib/supabase";
+import { lokasiService } from "../../../services/lokasiService";
+import LokasiModal from "./LokasiModal";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import "../../../styles/dashboard.css";
@@ -34,25 +35,15 @@ export default function LokasiMaster() {
   const fetchLocations = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('locations')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) throw error;
-      setLocations(data || []);
+      const data = await lokasiService.getAll();
+      setLocations(data);
     } catch (err) {
       console.error("Gagal memuat data:", err.message);
       MySwal.fire({
         icon: 'error',
         title: 'Gagal Memuat Data',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -93,16 +84,9 @@ export default function LokasiMaster() {
     setSubmitting(true);
     try {
       if (isEditing) {
-        const { error } = await supabase
-          .from('locations')
-          .update(formData)
-          .eq('id', editId);
-        if (error) throw error;
+        await lokasiService.update(editId, formData);
       } else {
-        const { error } = await supabase
-          .from('locations')
-          .insert([formData]);
-        if (error) throw error;
+        await lokasiService.create(formData);
       }
 
       const bootstrap = await import("bootstrap");
@@ -121,11 +105,7 @@ export default function LokasiMaster() {
         toast: true,
         position: 'top-end',
         timerProgressBar: true,
-        customClass: {
-          popup: 'swal2-toast-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom'
-        }
+        customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
       });
 
     } catch (err) {
@@ -133,12 +113,7 @@ export default function LokasiMaster() {
         icon: 'error',
         title: 'Terjadi Kesalahan',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -155,20 +130,13 @@ export default function LokasiMaster() {
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal',
       reverseButtons: true,
-      customClass: {
-        popup: 'swal2-popup-custom',
-        title: 'swal2-title-custom',
-        htmlContainer: 'swal2-html-custom',
-        confirmButton: 'swal2-confirm-btn-custom',
-        cancelButton: 'swal2-cancel-btn-custom'
-      },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
       buttonsStyling: false
     });
 
     if (result.isConfirmed) {
       try {
-        const { error } = await supabase.from('locations').delete().eq('id', id);
-        if (error) throw error;
+        await lokasiService.delete(id);
         fetchLocations();
         MySwal.fire({
           icon: 'success',
@@ -178,23 +146,14 @@ export default function LokasiMaster() {
           timer: 1500,
           toast: true,
           position: 'top-end',
-          customClass: {
-            popup: 'swal2-toast-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom'
-          }
+          customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
         });
       } catch (err) {
         MySwal.fire({
           icon: 'error',
           title: 'Gagal Menghapus',
           text: err.message,
-          customClass: {
-            popup: 'swal2-popup-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom',
-            confirmButton: 'swal2-confirm-btn-custom'
-          },
+          customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
           buttonsStyling: false
         });
       }
@@ -290,7 +249,6 @@ export default function LokasiMaster() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
               <p className="text-muted small mb-0">Halaman {currentPage} dari {totalPages}</p>
@@ -314,74 +272,14 @@ export default function LokasiMaster() {
         </div>
       </div>
 
-      {/* Unified Lokasi Modal */}
-      <div className="modal fade" id="lokasiModal" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 shadow-lg p-2">
-            <div className="modal-header border-bottom-0 pb-0">
-              <h5 className="modal-title fw-bold">{isEditing ? `Edit Lokasi #${editId}` : "Tambah Lokasi Baru"}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label-custom">NAMA LOKASI / AREA</label>
-                  <input 
-                    type="text" 
-                    name="name" 
-                    className="form-control form-control-custom" 
-                    placeholder="Contoh: Pit Charlie" 
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label-custom">TIPE AREA</label>
-                  <select 
-                    name="type" 
-                    className="form-select form-control-custom" 
-                    value={formData.type}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Pilih Tipe</option>
-                    <option value="Pit Mining">Pit Mining</option>
-                    <option value="Workshop">Workshop</option>
-                    <option value="Office & Camp">Office & Camp</option>
-                    <option value="Hauling Road">Hauling Road</option>
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label-custom">KETERANGAN TAMBAHAN</label>
-                  <textarea 
-                    name="description" 
-                    className="form-control form-control-custom" 
-                    rows="3" 
-                    placeholder="Jelaskan detail lokasi..."
-                    value={formData.description}
-                    onChange={handleInputChange}
-                  ></textarea>
-                </div>
-                <div className="mb-4">
-                  <label className="form-label-custom">STATUS</label>
-                  <select name="status" className="form-select form-control-custom" value={formData.status} onChange={handleInputChange}>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-
-                <div className="modal-footer border-top-0 p-0 mt-4">
-                  <button type="button" className="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                  <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" disabled={submitting}>
-                    {submitting ? "Menyimpan..." : (isEditing ? "Update Lokasi" : "Simpan Lokasi")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LokasiModal 
+        isEditing={isEditing}
+        editId={editId}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+        submitting={submitting}
+      />
     </main>
   );
 }

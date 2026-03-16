@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "../../../lib/supabase";
+import { mekanikService } from "../../../services/mekanikService";
+import MekanikModal from "./MekanikModal";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import "../../../styles/dashboard.css";
@@ -25,7 +26,7 @@ export default function MekanikMaster() {
     status: "Active",
     email: "",
     password: "",
-    access_role: "mechanic" // Default role
+    access_role: "mechanic"
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -37,25 +38,15 @@ export default function MekanikMaster() {
   const fetchMekaniks = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('mechanics')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) throw error;
-      setMekaniks(data || []);
+      const data = await mekanikService.getAll();
+      setMekaniks(data);
     } catch (err) {
       console.error("Gagal memuat data:", err.message);
       MySwal.fire({
         icon: 'error',
         title: 'Gagal Memuat Data',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -107,16 +98,9 @@ export default function MekanikMaster() {
     setSubmitting(true);
     try {
       if (isEditing) {
-        const { error } = await supabase
-          .from('mechanics')
-          .update(formData)
-          .eq('id', editId);
-        if (error) throw error;
+        await mekanikService.update(editId, formData);
       } else {
-        const { error } = await supabase
-          .from('mechanics')
-          .insert([formData]);
-        if (error) throw error;
+        await mekanikService.create(formData);
       }
 
       const bootstrap = await import("bootstrap");
@@ -135,11 +119,7 @@ export default function MekanikMaster() {
         toast: true,
         position: 'top-end',
         timerProgressBar: true,
-        customClass: {
-          popup: 'swal2-toast-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom'
-        }
+        customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
       });
 
     } catch (err) {
@@ -147,12 +127,7 @@ export default function MekanikMaster() {
         icon: 'error',
         title: 'Terjadi Kesalahan',
         text: err.message,
-        customClass: {
-          popup: 'swal2-popup-custom',
-          title: 'swal2-title-custom',
-          htmlContainer: 'swal2-html-custom',
-          confirmButton: 'swal2-confirm-btn-custom'
-        },
+        customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
         buttonsStyling: false
       });
     } finally {
@@ -169,20 +144,13 @@ export default function MekanikMaster() {
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal',
       reverseButtons: true,
-      customClass: {
-        popup: 'swal2-popup-custom',
-        title: 'swal2-title-custom',
-        htmlContainer: 'swal2-html-custom',
-        confirmButton: 'swal2-confirm-btn-custom',
-        cancelButton: 'swal2-cancel-btn-custom'
-      },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
       buttonsStyling: false
     });
 
     if (result.isConfirmed) {
       try {
-        const { error } = await supabase.from('mechanics').delete().eq('id', id);
-        if (error) throw error;
+        await mekanikService.delete(id);
         fetchMekaniks();
         MySwal.fire({
           icon: 'success',
@@ -192,23 +160,14 @@ export default function MekanikMaster() {
           timer: 1500,
           toast: true,
           position: 'top-end',
-          customClass: {
-            popup: 'swal2-toast-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom'
-          }
+          customClass: { popup: 'swal2-toast-custom', title: 'swal2-title-custom' }
         });
       } catch (err) {
         MySwal.fire({
           icon: 'error',
           title: 'Gagal Menghapus',
           text: err.message,
-          customClass: {
-            popup: 'swal2-popup-custom',
-            title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom',
-            confirmButton: 'swal2-confirm-btn-custom'
-          },
+          customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom' },
           buttonsStyling: false
         });
       }
@@ -318,7 +277,6 @@ export default function MekanikMaster() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
               <p className="text-muted small mb-0">Halaman {currentPage} dari {totalPages}</p>
@@ -342,85 +300,14 @@ export default function MekanikMaster() {
         </div>
       </div>
 
-      {/* Unified Mekanik Modal */}
-      <div className="modal fade" id="mekanikModal" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content border-0 shadow-lg p-2">
-            <div className="modal-header border-bottom-0 pb-0">
-              <h5 className="modal-title fw-bold">{isEditing ? `Edit Mekanik #${editId}` : "Tambah Mekanik Baru"}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleSubmit}>
-                <div className="section-divider">
-                  <span className="section-divider-text">Informasi Personel & Hak Akses</span>
-                </div>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label-custom">NAMA LENGKAP</label>
-                    <input type="text" name="name" className="form-control form-control-custom" placeholder="Contoh: Yudistira Rivaldi" value={formData.name} onChange={handleInputChange} required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">HAK AKSES SISTEM (ROLE)</label>
-                    <select name="access_role" className="form-select border-primary fw-bold form-control-custom" value={formData.access_role} onChange={handleInputChange} required>
-                      <option value="mechanic">MECHANIC (Limited Access)</option>
-                      <option value="admin">ADMIN (Full Access / Master Data)</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">SPESIALISASI / JABATAN</label>
-                    <select name="role" className="form-select form-control-custom" value={formData.role} onChange={handleInputChange} required>
-                      <option value="">Pilih Spesialisasi</option>
-                      <option value="Senior Mechanic">Senior Mechanic</option>
-                      <option value="Hydraulic Specialist">Hydraulic Specialist</option>
-                      <option value="Engine Specialist">Engine Specialist</option>
-                      <option value="General Mechanic">General Mechanic</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">PENEMPATAN LOKASI</label>
-                    <select name="location" className="form-select form-control-custom" value={formData.location} onChange={handleInputChange} required>
-                      <option value="">Pilih Lokasi</option>
-                      <option value="Pit Alpha">Pit Alpha</option>
-                      <option value="Pit Bravo">Pit Bravo</option>
-                      <option value="Workshop Utama">Workshop Utama</option>
-                      <option value="Site Banjarbaru">Site Banjarbaru</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">STATUS AKUN</label>
-                    <select name="status" className="form-select form-control-custom" value={formData.status} onChange={handleInputChange}>
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="section-divider mt-4">
-                  <span className="section-divider-text">Detail Kredensial</span>
-                </div>
-                <div className="row g-3 mb-4">
-                  <div className="col-md-6">
-                    <label className="form-label-custom">EMAIL / USERNAME</label>
-                    <input type="email" name="email" className="form-control form-control-custom" placeholder="yudis@uniquip.com" value={formData.email} onChange={handleInputChange} required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label-custom">PASSWORD</label>
-                    <input type="password" name="password" className="form-control form-control-custom" placeholder="••••••••" value={formData.password} onChange={handleInputChange} required={!isEditing} />
-                  </div>
-                </div>
-
-                <div className="modal-footer border-top-0 p-0 mt-4">
-                  <button type="button" className="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                  <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" disabled={submitting}>
-                    {submitting ? "Menyimpan..." : (isEditing ? "Update Mekanik" : "Simpan & Buat Akun")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MekanikModal 
+        isEditing={isEditing}
+        editId={editId}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+        submitting={submitting}
+      />
     </main>
   );
 }
