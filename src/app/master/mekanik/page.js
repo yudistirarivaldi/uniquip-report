@@ -137,14 +137,14 @@ export default function MekanikMaster() {
 
   const handleDelete = async (id, name) => {
     const result = await MySwal.fire({
-      title: 'Hapus Mekanik?',
-      text: `${name} (#${id}) akan dihapus permanen!`,
+      title: 'Hapus Data Personel?',
+      html: `Anda akan menghapus mekanik <b>${name}</b> (#${id}) secara permanen.<br/><small class="text-danger mt-2 d-block">Akses sistem untuk user ini akan dicabut!</small>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus!',
-      cancelButtonText: 'Batal',
+      confirmButtonText: 'Ya, Pecat & Hapus',
+      cancelButtonText: 'Batalkan',
       reverseButtons: true,
-      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom', htmlContainer: 'swal2-html-custom' },
       buttonsStyling: false
     });
 

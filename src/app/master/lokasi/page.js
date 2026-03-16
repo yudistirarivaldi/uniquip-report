@@ -123,14 +123,14 @@ export default function LokasiMaster() {
 
   const handleDelete = async (id, name) => {
     const result = await MySwal.fire({
-      title: 'Hapus Lokasi?',
-      text: `${name} (#${id}) akan dihapus permanen!`,
+      title: 'Hapus Area Lokasi?',
+      html: `Anda akan menghapus area <b>${name}</b> (#${id}) secara permanen.<br/><small class="text-danger mt-2 d-block">Data koordinat dan histori di lokasi ini akan hilang!</small>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus!',
-      cancelButtonText: 'Batal',
+      confirmButtonText: 'Ya, Hapus Lokasi',
+      cancelButtonText: 'Batalkan',
       reverseButtons: true,
-      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom', htmlContainer: 'swal2-html-custom' },
       buttonsStyling: false
     });
 

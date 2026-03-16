@@ -125,14 +125,14 @@ export default function UnitMaster() {
 
   const handleDelete = async (id, model) => {
     const result = await MySwal.fire({
-      title: 'Apakah anda yakin?',
-      text: `Unit ${model} (#${id}) akan dihapus permanen!`,
+      title: 'Hapus Unit Armada?',
+      html: `Anda akan menghapus <b>${model}</b> (#${id}) secara permanen.<br/><small class="text-danger mt-2 d-block">Tindakan ini tidak dapat dibatalkan!</small>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus!',
-      cancelButtonText: 'Batal',
+      confirmButtonText: 'Ya, Hapus Sekarang',
+      cancelButtonText: 'Batalkan',
       reverseButtons: true,
-      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom' },
+      customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-btn-custom', cancelButton: 'swal2-cancel-btn-custom', htmlContainer: 'swal2-html-custom' },
       buttonsStyling: false
     });
 

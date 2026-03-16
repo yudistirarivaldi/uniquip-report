@@ -36,48 +36,74 @@ body {
 
 /* Modern SweetAlert2 Custom Styling */
 .swal2-popup-custom {
-    border-radius: 24px !important;
-    padding: 2rem !important;
+    border-radius: 32px !important;
+    padding: 2.5rem !important;
     font-family: 'Outfit', sans-serif !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 .swal2-title-custom {
     font-weight: 800 !important;
-    color: #1e293b !important;
-    font-size: 1.5rem !important;
+    color: #0f172a !important;
+    font-size: 1.6rem !important;
+    margin-top: 1rem !important;
 }
 
 .swal2-html-custom {
-    color: #64748b !important;
-    font-size: 1rem !important;
+    color: #475569 !important;
+    font-size: 1.05rem !important;
     font-weight: 400 !important;
+    line-height: 1.6 !important;
+    margin-top: 0.5rem !important;
 }
 
 .swal2-confirm-btn-custom {
-    background: var(--primary-gradient) !important;
-    border-radius: 50px !important;
-    padding: 12px 32px !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
+    background: #ff4757 !important; /* Specific Red for Danger */
+    border-radius: 100px !important;
+    padding: 14px 40px !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
     border: none !important;
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: 0 10px 20px -5px rgba(255, 71, 87, 0.4) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    transition: 0.3s !important;
+}
+
+.swal2-confirm-btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(255, 71, 87, 0.5) !important;
 }
 
 .swal2-cancel-btn-custom {
     background: #f1f5f9 !important;
     color: #64748b !important;
-    border-radius: 50px !important;
-    padding: 12px 32px !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
+    border-radius: 100px !important;
+    padding: 14px 40px !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
     border: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    transition: 0.3s !important;
+}
+
+.swal2-cancel-btn-custom:hover {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+}
+
+.swal2-icon {
+    border: 3px solid transparent !important;
+    transform: scale(1.1);
 }
 
 .swal2-toast-custom {
-    border-radius: 16px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1) !important;
+    padding: 1rem !important;
 }
