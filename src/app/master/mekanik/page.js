@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { mekanikService } from "../../../services/mekanikService";
+import { lokasiService } from "../../../services/lokasiService";
 import MekanikModal from "./MekanikModal";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -16,6 +17,7 @@ export default function MekanikMaster() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [mekaniks, setMekaniks] = useState([]);
+  const [locations, setLocations] = useState([]);
   const itemsPerPage = 5;
 
   // Form State
@@ -33,7 +35,17 @@ export default function MekanikMaster() {
 
   useEffect(() => {
     fetchMekaniks();
+    fetchLocations();
   }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const data = await lokasiService.getAll();
+      setLocations(data || []);
+    } catch (err) {
+      console.error("Gagal memuat lokasi:", err.message);
+    }
+  };
 
   const fetchMekaniks = async () => {
     try {
@@ -307,6 +319,7 @@ export default function MekanikMaster() {
         handleInputChange={handleInputChange}
         handleSubmit={handleSubmit}
         submitting={submitting}
+        locations={locations.filter(l => l.status === 'Active')}
       />
     </main>
   );

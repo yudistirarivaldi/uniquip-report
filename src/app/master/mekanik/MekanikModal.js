@@ -1,6 +1,6 @@
 "use client"
 
-export default function MekanikModal({ isEditing, editId, formData, handleInputChange, handleSubmit, submitting }) {
+export default function MekanikModal({ isEditing, editId, formData, handleInputChange, handleSubmit, submitting, locations = [] }) {
   return (
     <div className="modal fade" id="mekanikModal" tabIndex="-1" aria-hidden="true">
       <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -40,10 +40,9 @@ export default function MekanikModal({ isEditing, editId, formData, handleInputC
                   <label className="form-label-custom">PENEMPATAN LOKASI</label>
                   <select name="location" className="form-select form-control-custom" value={formData.location} onChange={handleInputChange} required>
                     <option value="">Pilih Lokasi</option>
-                    <option value="Pit Alpha">Pit Alpha</option>
-                    <option value="Pit Bravo">Pit Bravo</option>
-                    <option value="Workshop Utama">Workshop Utama</option>
-                    <option value="Site Banjarbaru">Site Banjarbaru</option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.name}>{loc.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-md-6">

@@ -29,6 +29,11 @@ export default function LoginPage() {
         throw new Error("Email atau Password salah!");
       }
 
+      // 2. Cek Status Akun (Active/Inactive)
+      if (data.status !== "Active") {
+        throw new Error("Akun Anda dinonaktifkan. Silakan hubungi Admin.");
+      }
+
       // 2. Simpan session sederhana di LocalStorage
       localStorage.setItem("user_session", JSON.stringify({
         id: data.id,
