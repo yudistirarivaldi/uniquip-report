@@ -13,6 +13,8 @@ export default function Home() {
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
   const [countdown, setCountdown] = useState(60);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Weather State
   const [weather, setWeather] = useState({
@@ -149,6 +151,12 @@ export default function Home() {
     });
   }, [activities, filter, search]);
 
+  const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
+  const paginatedActivities = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredActivities.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredActivities, currentPage]);
+
   const openDetail = async (act) => {
     setSelectedActivity(act);
     const bootstrap = await import("bootstrap");
@@ -188,7 +196,7 @@ export default function Home() {
       <div className="container-fluid px-4 px-lg-5">
         <div className="row align-items-center mb-4 g-3">
           <div className="col-lg-6">
-            <h4 className="fw-bold mb-0 text-dark">Dashboard Overview 👋</h4>
+            <h4 className="fw-bold mb-0 text-dark">Dashboard Overview</h4>
             <p className="text-muted small mb-0">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • Site Banjarbaru</p>
           </div>
           <div className="col-lg-6">
@@ -212,7 +220,7 @@ export default function Home() {
                   className="form-control rounded-pill border-0 shadow-sm" 
                   placeholder="Cari Unit atau Mekanik..." 
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                 />
               </div>
             </div>
@@ -291,7 +299,7 @@ export default function Home() {
                     <div 
                       key={f}
                       className={`filter-pill ${filter === f ? 'active' : ''}`}
-                      onClick={() => setFilter(f)}
+                      onClick={() => { setFilter(f); setCurrentPage(1); }}
                     >
                       {f !== "Semua" && <span className={`status-dot me-1 ${f === 'Breakdown' ? 'bg-danger' : f === 'Proses' ? 'bg-warning' : 'bg-success'}`}></span>}
                       {f}
@@ -301,7 +309,7 @@ export default function Home() {
               </div>
 
               <div className="d-flex flex-column gap-3">
-                {!loading && filteredActivities.length > 0 ? filteredActivities.map((act) => (
+                {!loading && paginatedActivities.length > 0 ? paginatedActivities.map((act) => (
                   <div 
                     key={act.id}
                     className="p-3 border rounded-4 bg-white shadow-sm transition hover-shadow cursor-pointer border-0 animate-fade-up"
@@ -345,6 +353,34 @@ export default function Home() {
                   </div>
                 )}
               </div>
+
+              {/* Dashboard Pagination UI */}
+              {totalPages > 1 && (
+                <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                  <span className="text-muted text-xs fw-bold">Halaman {currentPage} dari {totalPages}</span>
+                  <nav>
+                    <ul className="pagination pagination-sm mb-0">
+                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <button className="page-link border-0 rounded-circle mx-1" onClick={() => setCurrentPage(p => p - 1)}>
+                          <i className="bi bi-chevron-left text-xs"></i>
+                        </button>
+                      </li>
+                      {[...Array(totalPages)].map((_, i) => (
+                        <li key={i+1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                          <button className="page-link border-0 rounded-circle mx-1 text-xs fw-bold" onClick={() => setCurrentPage(i + 1)}>
+                            {i + 1}
+                          </button>
+                        </li>
+                      ))}
+                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <button className="page-link border-0 rounded-circle mx-1" onClick={() => setCurrentPage(p => p + 1)}>
+                          <i className="bi bi-chevron-right text-xs"></i>
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
             </div>
           </div>
         </div>

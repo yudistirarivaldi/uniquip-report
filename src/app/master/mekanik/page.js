@@ -237,7 +237,7 @@ export default function MekanikMaster() {
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
           <div>
             <h4 className="fw-bold mb-1 text-dark">Data Mekanik</h4>
-            <p className="text-muted small mb-0">Kelola informasi mekanik dan hak akses sistem (Live Supabase)</p>
+            <p className="text-muted small mb-0">Kelola informasi mekanik dan hak akses sistem</p>
           </div>
           <button className="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2" onClick={openAddModal}>
             <i className="bi bi-plus-lg"></i>

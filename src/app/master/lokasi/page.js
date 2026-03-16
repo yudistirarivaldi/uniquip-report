@@ -220,7 +220,7 @@ export default function LokasiMaster() {
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
           <div>
             <h4 className="fw-bold mb-1 text-dark">Data Lokasi Pit & Site</h4>
-            <p className="text-muted small mb-0">Manajemen Area Penambangan (Live Supabase)</p>
+            <p className="text-muted small mb-0">Manajemen Area Penambangan</p>
           </div>
           <button className="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2" onClick={openAddModal}>
             <i className="bi bi-plus-lg"></i>
