@@ -39,9 +39,9 @@ export default function LaporanBaru() {
                   <div className="col-md-6">
                     <label className="text-xs fw-800 text-muted mb-2 d-block text-uppercase">Status Lapangan</label>
                     <select className="form-select border-0 bg-light py-3 rounded-4">
-                      <option value="Breakdown">🚨 Breakdown (Mati)</option>
-                      <option value="Proses">⚙️ Dalam Pengerjaan</option>
-                      <option value="Selesai">✅ Selesai Perbaikan</option>
+                      <option value="Breakdown">Breakdown (Mati)</option>
+                      <option value="Proses">Dalam Pengerjaan</option>
+                      <option value="Selesai">Selesai Perbaikan</option>
                     </select>
                   </div>
 
