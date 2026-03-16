@@ -278,7 +278,7 @@ export default function AktivitasPage() {
               style={{ height: '48px', border: '1px solid #e2e8f0' }}
             >
               <option value="Semua">Semua Status</option>
-              <option value="Proses">Dalam Pengerjaan</option>
+              <option value="Proses">Proses</option>
               <option value="Breakdown">Breakdown</option>
               <option value="Selesai">Selesai</option>
             </select>
