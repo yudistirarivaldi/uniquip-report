@@ -156,3 +156,24 @@
     transition: transform 0.3s ease; 
 }
 .modal.show .zoom-img { transform: scale(1); }
+
+/* Animation for Manual Refresh */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin-anim {
+    animation: spin 1s linear infinite;
+}
+.hover-rotate:hover i {
+    transform: rotate(180deg);
+    transition: transform 0.5s ease;
+}
+.btn-white {
+    background: white;
+    color: #475569;
+}
+.btn-white:hover {
+    background: #f8fafc;
+    color: #2563eb;
+}
