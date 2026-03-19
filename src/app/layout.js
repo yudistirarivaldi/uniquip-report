@@ -9,6 +9,7 @@ import Sidebar from "../components/Sidebar";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function RootLayout({ children }) {
+  const [isChecking, setIsChecking] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
@@ -17,11 +18,12 @@ export default function RootLayout({ children }) {
   const isLoginPage = pathname === "/login";
 
   useEffect(() => {
+    // Jalankan pengecekan auth hanya di client-side
     const session = localStorage.getItem("user_session");
     
     // 1. Jika tidak ada session dan bukan di hal login, tendang ke login
     if (!session && !isLoginPage) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -31,12 +33,36 @@ export default function RootLayout({ children }) {
       
       // Jika Mechanic mencoba akses menu /master, tendang balik ke dashboard
       if (user.role === 'mechanic' && pathname.startsWith('/master')) {
-        router.push("/");
+        router.replace("/");
+        return;
+      }
+
+      // Jika di halaman login tapi sudah punya session, pindahkan ke dashboard
+      if (isLoginPage) {
+        router.replace("/");
+        return;
       }
     }
+
+    // Auth sudah tervalidasi, matikan loading
+    setIsChecking(false);
   }, [pathname, isLoginPage, router]);
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
+
+  // Loading Screen while checking auth
+  if (isChecking && !isLoginPage) {
+    return (
+      <html lang="id">
+        <body className="bg-light d-flex align-items-center justify-content-center vh-100">
+          <div className="text-center">
+            <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status"></div>
+            <p className="mt-3 text-muted fw-bold">Memuat Sistem...</p>
+          </div>
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="id">
